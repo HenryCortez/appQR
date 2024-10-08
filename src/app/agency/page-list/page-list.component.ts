@@ -8,6 +8,8 @@ import { FormComponent } from '../form/form.component';
 import { environment } from 'src/environments/environment.development';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IAgency } from '../interfaces/agency.interface';
+import { AgencyService } from '../services/agency.service';
+import { pageList } from 'src/app/shared/interfaces/page-list.interface';
 
 
 
@@ -17,24 +19,8 @@ import { IAgency } from '../interfaces/agency.interface';
   styleUrls: ['./page-list.component.css']
 })
 
-export class PageListComponent {
-  data: IAgency[] = [
-    { _id: 1, name: 'Ambato', address: 'Calle A' },
-    { _id: 2, name: 'Riobamba', address: 'Calle B' },
-    { _id: 3, name: 'Quito', address: 'Calle C' },
-    { _id: 4, name: 'Cuenca', address: 'Calle D' },
-    { _id: 5, name: 'Guayaquil', address: 'Calle E' },
-    { _id: 6, name: 'Ambato', address: 'Calle A' },
-    { _id: 7, name: 'Riobamba', address: 'Calle B' },
-    { _id: 8, name: 'Quito', address: 'Calle C' },
-    { _id: 9, name: 'Cuenca', address: 'Calle D' },
-    { _id: 10, name: 'Guayaquil', address: 'Calle E' },
-    { _id: 11, name: 'Ambato', address: 'Calle A' },
-    { _id: 12, name: 'Riobamba', address: 'Calle B' },
-    { _id: 13, name: 'Quito', address: 'Calle C' },
-    { _id: 14, name: 'Cuenca', address: 'Calle D' },
-    { _id: 15, name: 'Guayaquil', address: 'Calle E' },
-  ];
+export class PageListComponent extends pageList{
+ 
   metaDataColumns: MetaDataColumn[] = [
     { field: "id", title: "ID" },
     { field: "name", title: "AGENCIA" },
@@ -44,8 +30,6 @@ export class PageListComponent {
     { icon: "cloud_download", tooltip: "EXPORTAR", color: "accent", action: "DOWNLOAD" },
     { icon: "add", tooltip: "AGREGAR", color: "primary", action: "NEW" }
   ];
-  records: IAgency[] = [];
-  totalRecords = 0;
 
   currentPage = 0;
 
@@ -53,22 +37,24 @@ export class PageListComponent {
   dialog = inject(MatDialog);
   snackBar = inject(MatSnackBar);
 
+
   constructor() {
+    
+    super();
+    this.servicio = inject(AgencyService);
+    
     this.loadAgencies();
   }
 
   loadAgencies() {
-    this.records = [...this.data];
+    
+    this.loadData();
     this.changePage(this.currentPage);
+   
   }
 
   delete(id: number) {
-    const position = this.data.findIndex(ind => ind._id === id);
-    if (position !== -1) {
-      this.data.splice(position, 1);
-      this.totalRecords = this.data.length;
-      this.loadAgencies();
-    }
+    this.deleteData(id);
   }
 
   openForm(row: IAgency | null = null) {
@@ -80,22 +66,7 @@ export class PageListComponent {
     const reference: MatDialogRef<FormComponent> = this.dialog.open(FormComponent, options);
 
     reference.afterClosed().subscribe((response) => {
-      if (!response) { return; }
-      if (response._id) {
-        const index = this.data.findIndex(agency => agency._id === response._id);
-        if (index !== -1) {
-          this.data[index] = response;
-        }
-        this.totalRecords = this.data.length; 
-        this.loadAgencies();
-        this.showMessage('Registro actualizado');
-      } else {
-        const newAgency = { ...response, _id: this.data.length + 1 };
-        this.data.push(newAgency);
-        this.totalRecords = this.data.length;
-        this.loadAgencies();
-        this.showMessage('Registro exitoso');
-      }
+      this.createData(response);
     });
   }
 
@@ -120,6 +91,7 @@ export class PageListComponent {
 
   changePage(page: number) {
     const pageSize = environment.PAGE_SIZE;
+    console.log(pageSize)
     const skip = pageSize * page;
     this.records = this.data.slice(skip, skip + pageSize);
     this.currentPage = page;
@@ -129,15 +101,9 @@ export class PageListComponent {
     const dialogRef = this.dialog.open(FormComponent, {
       data: record
     });
-
+   
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const index = this.data.findIndex(r => r._id === result._id);
-        if (index !== -1) {
-          this.data[index] = result;
-          this.loadAgencies();
-        }
-      }
+      this.updateData(result);
     });
   }
 }

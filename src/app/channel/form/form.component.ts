@@ -28,9 +28,9 @@ export class FormComponent {
 
   loadForm(){
     this.group = new FormGroup({
-      _id: new FormControl(this.data?._id),
+      _id: new FormControl(this.data?.id),
       name: new FormControl(this.data?.name, Validators.required),
-      description: new FormControl(this.data?.description, Validators.required),
+      descripcion: new FormControl(this.data?.descripcion, Validators.required),
     })
   }
 

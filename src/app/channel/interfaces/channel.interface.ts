@@ -1,7 +1,7 @@
 import { IModule } from "src/app/shared/interfaces/module.interface";
 
-export interface IAgency extends IModule{
-    _id: number;
+export interface IChannel extends IModule{
+    _id: number; 
     name: string;
-    address: string;
+    descripcion: string; 
   }
